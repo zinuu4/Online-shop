@@ -2,8 +2,9 @@ const express = require('express');
 const path = require('path');
 const bodyParses = require('body-parser');
 
-const { routes: adminRoutes } = require('./routes/admin');
+const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
+const { get404 } = require('./controllers/errors');
 
 const PORT = 5001;
 const app = express();
@@ -17,10 +18,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
 
-app.use((req, res, next) => {
-  res
-    .status(404)
-    .render('404', { documentTitle: '404 Page', title: 'Page Not Found!' });
-});
+app.use(get404);
 
 app.listen(PORT);
