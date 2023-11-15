@@ -2,7 +2,7 @@ const Product = require('../models/product');
 
 exports.getAddProduct = (req, res, next) => {
   res.render('admin/add-product', {
-    documentTitle: 'Add product',
+    pageTitle: 'Add product',
     path: '/admin/add-product',
   });
 };
@@ -25,7 +25,7 @@ exports.getProducts = (req, res, next) => {
   Product.fetchAll((products) => {
     res.render('admin/products', {
       products,
-      documentTitle: 'Admin products',
+      pageTitle: 'Admin products',
       path: '/admin/products',
     });
   });
