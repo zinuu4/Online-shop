@@ -43,4 +43,16 @@ module.exports = class Product {
       callback(desiredProduct || {});
     });
   }
+
+  static updateProduct(updatedProduct) {
+    getProductsFromFile((products) => {
+      const desiredProductIndex = products.findIndex(
+        (product) => product.id === updatedProduct.id
+      );
+      products[desiredProductIndex] = updatedProduct;
+      fs.writeFile(p, JSON.stringify(products), (err) => {
+        console.log(err);
+      });
+    });
+  }
 };
