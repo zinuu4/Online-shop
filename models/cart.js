@@ -16,14 +16,22 @@ const getProductsFromFile = (callback) => {
   });
 };
 
-const customWriteFile = (cart) => {
+const customWriteFile = (cart, callback) => {
   fs.writeFile(p, JSON.stringify(cart), (err) => {
-    console.log(err);
+    if (err) {
+      console.log(err);
+    } else {
+      callback();
+    }
   });
 };
 
 module.exports = class Cart {
-  static addProduct({ id, productPrice }) {
+  static fetchCart(callback) {
+    getProductsFromFile(callback);
+  }
+
+  static addProduct(id, productPrice, callback) {
     getProductsFromFile((cart) => {
       const existingProductIndex = cart.products.findIndex(
         (product) => product.id === id
@@ -44,26 +52,32 @@ module.exports = class Cart {
       }
 
       cart.totalPrice += +productPrice;
-      customWriteFile(cart);
+      customWriteFile(cart, callback);
     });
   }
 
-  static deleteProduct({ id }) {
+  static deleteProduct(id, callback = () => {}) {
     getProductsFromFile((cart, err) => {
       if (err) {
         return;
       }
+
       let updatedCart = { ...cart };
 
       const product = cart.products.find((product) => product.id === id);
-      const { quantity, price } = product;
+
+      if (!product) {
+        return;
+      }
+
+      const { price, quantity } = product;
 
       updatedCart.products = cart.products.filter(
         (product) => product.id !== id
       );
       updatedCart.totalPrice -= +price * +quantity;
 
-      customWriteFile(updatedCart);
+      customWriteFile(updatedCart, callback);
     });
   }
 };

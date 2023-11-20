@@ -69,7 +69,7 @@ module.exports = class Product {
         return;
       }
 
-      Cart.deleteProduct({ id });
+      Cart.deleteProduct(id);
 
       const updatedProducts = products.filter((product) => product.id !== id);
       customWriteFile(updatedProducts, callback);
