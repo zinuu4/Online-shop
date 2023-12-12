@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { getDb } = require('../utils/database');
 
 const rootDir = require('../utils/path');
 const Cart = require('./cart');
@@ -35,11 +36,12 @@ module.exports = class Product {
   }
 
   save() {
-    this.id = Math.random().toString();
-    getProductsFromFile((products) => {
-      products.push(this);
-      customWriteFile(products);
-    });
+    const db = getDb();
+    return db
+      .collection('products')
+      .insertOne(this)
+      .then()
+      .catch((error) => console.log(error));
   }
 
   static fetchAll(callback) {

@@ -8,7 +8,7 @@ const shopRoutes = require('./routes/shop');
 const { get404 } = require('./controllers/errors');
 const { mongoConnect } = require('./utils/database');
 
-const PORT = 5001;
+const PORT = 3000;
 const app = express();
 
 app.set('view engine', 'ejs');
