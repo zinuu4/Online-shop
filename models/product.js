@@ -1,7 +1,8 @@
 const fs = require('fs');
 const path = require('path');
-const { getDb } = require('../utils/database');
+const { ObjectId } = require('mongodb');
 
+const { getDb } = require('../utils/database');
 const rootDir = require('../utils/path');
 const Cart = require('./cart');
 
@@ -51,17 +52,20 @@ module.exports = class Product {
       .find()
       .toArray()
       .then((products) => {
-        console.log(products);
         return products;
       })
       .catch((error) => console.log(error));
   }
 
-  static findById(id, callback) {
-    getProductsFromFile((products) => {
-      const desiredProduct = products.find((product) => product.id === id);
-      callback(desiredProduct || {});
-    });
+  static findById(id) {
+    const db = getDb();
+    return db
+      .collection('products')
+      .findOne({ _id: new ObjectId(id) })
+      .then((product) => {
+        return product;
+      })
+      .catch((error) => console.log(error));
   }
 
   static updateProduct(updatedProduct, callback) {
