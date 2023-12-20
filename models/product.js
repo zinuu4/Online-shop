@@ -3,12 +3,13 @@ const { ObjectId } = require('mongodb');
 const { getDb } = require('../utils/database');
 
 module.exports = class Product {
-  constructor({ title, imageUrl, description, price, id }) {
+  constructor({ title, imageUrl, description, price, id, userId }) {
     this.title = title;
     this.imageUrl = imageUrl;
     this.description = description;
     this.price = price;
     this._id = id ? new ObjectId(_id) : null;
+    this.userId = userId;
   }
 
   save() {
@@ -41,9 +42,7 @@ module.exports = class Product {
     return db
       .collection('products')
       .findOne({ _id: new ObjectId(id) })
-      .then((product) => {
-        return product;
-      })
+      .then((product) => product)
       .catch((error) => console.log(error));
   }
 
