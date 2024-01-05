@@ -31,31 +31,6 @@ module.exports = class Cart {
     getProductsFromFile(callback);
   }
 
-  static addProduct(id, productPrice, callback) {
-    getProductsFromFile((cart) => {
-      const existingProductIndex = cart.products.findIndex(
-        (product) => product.id === id
-      );
-      const existingProduct = cart.products[existingProductIndex];
-
-      let updatedProduct;
-
-      if (existingProduct) {
-        updatedProduct = {
-          ...existingProduct,
-          quantity: existingProduct.quantity + 1,
-        };
-        cart.products[existingProductIndex] = updatedProduct;
-      } else {
-        updatedProduct = { id, price: productPrice, quantity: 1 };
-        cart.products = [...cart.products, updatedProduct];
-      }
-
-      cart.totalPrice += +productPrice;
-      customWriteFile(cart, callback);
-    });
-  }
-
   static deleteProduct(id, callback = () => {}) {
     getProductsFromFile((cart, err) => {
       if (err) {
