@@ -31,9 +31,7 @@ module.exports = class Product {
       .collection('products')
       .find()
       .toArray()
-      .then((products) => {
-        return products;
-      })
+      .then((products) => products)
       .catch((error) => console.log(error));
   }
 

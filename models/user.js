@@ -1,5 +1,6 @@
 const { ObjectId } = require('mongodb');
 
+const Product = require('./product');
 const { getDb } = require('../utils/database');
 
 class User {
@@ -23,25 +24,34 @@ class User {
   getCart() {
     const db = getDb();
 
-    const productIds = this.cart.items.map((item) => {
-      return item.productId;
-    });
+    const productIds = this.cart.items.map((item) => item.productId);
 
-    return db
-      .collection('products')
-      .find({ _id: { $in: productIds } })
-      .toArray()
+    let checkedProductIds;
+
+    return Product.fetchAll()
+      .then((products) => {
+        checkedProductIds = productIds.filter((id) =>
+          products.some((product) => product._id.toString() === id.toString())
+        );
+
+        return db
+          .collection('products')
+          .find({ _id: { $in: checkedProductIds } })
+          .toArray();
+      })
       .then((products) => {
         return products.map((product) => {
           return {
             ...product,
-            quantity: this.cart.items.find((item) => {
-              return item.productId.toString() === product._id.toString();
-            }).quantity,
+            quantity: this.cart.items.find(
+              (item) => item.productId.toString() === product._id.toString()
+            ).quantity,
           };
         });
       })
-      .catch((error) => console.log(error));
+      .catch((error) => {
+        console.error(error);
+      });
   }
 
   addToCart(product) {
