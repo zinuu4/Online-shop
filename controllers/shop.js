@@ -57,9 +57,18 @@ exports.postCartDeleteProduct = (req, res, next) => {
 };
 
 exports.getOrders = (req, res, next) => {
-  res.render('shop/orders', {
-    pageTitle: 'Your orders',
-    path: '/orders',
+  req.user.getOrders().then((orders) => {
+    res.render('shop/orders', {
+      path: '/orders',
+      pageTitle: 'Your Orders',
+      orders: orders,
+    });
+  });
+};
+
+exports.postOrder = (req, res, next) => {
+  req.user.addOrder().then(() => {
+    res.redirect('/orders');
   });
 };
 

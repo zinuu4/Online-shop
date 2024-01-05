@@ -95,6 +95,46 @@ class User {
       .catch((error) => console.log(error));
   }
 
+  addOrder() {
+    const db = getDb();
+
+    return this.getCart()
+      .then((products) => {
+        const order = {
+          items: products,
+          user: {
+            _id: new ObjectId(this._id),
+            name: this.username,
+            email: this.email,
+          },
+        };
+
+        return db.collection('orders').insertOne(order);
+      })
+      .then(() => {
+        this.cart = { items: [] };
+
+        return db
+          .collection('users')
+          .updateOne(
+            { _id: new ObjectId(this._id) },
+            { $set: { cart: { items: [] } } }
+          );
+      })
+      .catch((error) => console.log(error));
+  }
+
+  getOrders() {
+    const db = getDb();
+
+    return db
+      .collection('orders')
+      .find({ 'user._id': new ObjectId(this._id) })
+      .toArray()
+      .then()
+      .catch((error) => console.log(error));
+  }
+
   static findById(id) {
     const db = getDb();
 
