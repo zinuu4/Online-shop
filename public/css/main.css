@@ -199,7 +199,11 @@ form {
 
 @media (min-width: 768px) {
   .main-header__nav {
+    width: 100%;
+    height: 100%;
     display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 
   #side-menu-toggle {
