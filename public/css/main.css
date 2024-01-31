@@ -50,14 +50,21 @@ form {
   padding: 0;
 }
 
-.main-header__item a {
+.main-header__item a,
+.main-header__item button {
+  font: inherit;
+  background: transparent;
+  border: none;
   text-decoration: none;
   color: white;
+  cursor: pointer;
 }
 
 .main-header__item a:hover,
 .main-header__item a:active,
-.main-header__item a.active {
+.main-header__item a.active,
+.main-header__item button:hover,
+.main-header__item button:active {
   color: #ffeb3b;
 }
 
@@ -92,7 +99,11 @@ form {
   padding: 0;
 }
 
-.mobile-nav__item a {
+.mobile-nav__item a,
+.mobile-nav__item button {
+  background: transparent;
+  cursor: pointer;
+  border: none;
   text-decoration: none;
   color: black;
   font-size: 1.5rem;
@@ -101,7 +112,8 @@ form {
 
 .mobile-nav__item a:active,
 .mobile-nav__item a:hover,
-.mobile-nav__item a.active {
+.mobile-nav__item button:active,
+.mobile-nav__item button:hover {
   background: #00695c;
   color: white;
   border-radius: 3px;
@@ -194,6 +206,16 @@ form {
 .btn:hover,
 .btn:active {
   background-color: #00695c;
+  color: white;
+}
+
+.danger {
+  border: 1px solid red;
+  color: red;
+}
+
+.danger:hover {
+  background: red;
   color: white;
 }
 

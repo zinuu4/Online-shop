@@ -2,6 +2,8 @@ const express = require('express');
 const path = require('path');
 const bodyParses = require('body-parser');
 const mongoose = require('mongoose');
+const session = require('express-session');
+const MongoDBStore = require('connect-mongodb-session')(session);
 require('dotenv').config();
 
 const adminRoutes = require('./routes/admin');
@@ -13,22 +15,39 @@ const User = require('./models/user');
 
 const PORT = 3000;
 const app = express();
+const store = new MongoDBStore({
+  uri: process.env.MONGODB_URL,
+  collection: 'sessions',
+});
 
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 
 app.use(bodyParses.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(
+  session({
+    secret: 'my secret',
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
+    },
+    resave: false,
+    saveUninitialized: false,
+    store,
+  })
+);
 
 app.use((req, res, next) => {
-  User.findById('65996846d5662e476cf8f82a')
+  if (!req.session.user || !req.session.user._id) {
+    return next();
+  }
+  User.findById(req.session.user._id)
     .then((user) => {
       req.user = user;
       next();
     })
     .catch((error) => {
       console.log(error);
-      next();
     });
 });
 
