@@ -27,6 +27,7 @@
                 </div>
                 <input type="hidden" name="_id" value="<%= product._id %>">
     
+                <input name="_csrf" type="hidden" value="<%= csrfToken %>">
                 <button class="btn" type="submit">Edit Product</button>
             </form>
         </main>
@@ -51,6 +52,7 @@
                     <textarea name="description" id="description" rows="5"></textarea>
                 </div>
     
+                <input name="_csrf" type="hidden" value="<%= csrfToken %>">
                 <button class="btn" type="submit">Add Product</button>
             </form>
         </main>

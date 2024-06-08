@@ -2,12 +2,17 @@ const Product = require('../models/product');
 const Order = require('../models/order');
 
 exports.getIndex = (req, res, next) => {
+  let logoutMessage = '';
+  if (req.cookies.logout) {
+    logoutMessage = 'You are now logged out!';
+  }
+  res.clearCookie('logout');
   Product.find().then((products) => {
     res.render('shop/index', {
       products,
       pageTitle: 'Shop',
       path: '/',
-      isAuthenticated: req.session?.user,
+      logoutMessage,
     });
   });
 };
@@ -18,7 +23,6 @@ exports.getProducts = (req, res, next) => {
       products,
       pageTitle: 'All products',
       path: '/products',
-      isAuthenticated: req.session?.user,
     });
   });
 };
@@ -31,7 +35,6 @@ exports.getProduct = (req, res, next) => {
       product,
       pageTitle: product.title,
       path: '/products',
-      isAuthenticated: req.session?.user,
     });
   });
 };
@@ -42,7 +45,6 @@ exports.getCart = (req, res, next) => {
       products: user.cart.items,
       pageTitle: 'Your Cart',
       path: '/cart',
-      isAuthenticated: req.session?.user,
     });
   });
 };
@@ -76,7 +78,6 @@ exports.getOrders = (req, res, next) => {
       pageTitle: 'Your Orders',
       orders,
       total,
-      isAuthenticated: req.session?.user,
     });
   });
 };
@@ -92,7 +93,6 @@ exports.postOrder = (req, res, next) => {
       const order = new Order({
         user: {
           userId: req.user,
-          username: req.user.username,
           email: req.user.email,
         },
         products,
@@ -112,6 +112,5 @@ exports.getCheckout = (req, res, next) => {
   res.render('shop/checkout', {
     pageTitle: 'Checkout',
     path: '/checkout',
-    isAuthenticated: req.session?.user,
   });
 };
