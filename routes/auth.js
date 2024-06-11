@@ -12,6 +12,11 @@ const {
   postNewPassword,
 } = require('../controllers/auth');
 
+const {
+  loginValidators,
+  signupValidators,
+} = require('../middleware/validators/auth');
+
 const router = express.Router();
 
 router.get('/login', getLogin);
@@ -20,9 +25,9 @@ router.get('/signup', getSignup);
 
 router.get('/reset', getReset);
 
-router.post('/login', postLogin);
+router.post('/login', ...loginValidators, postLogin);
 
-router.post('/signup', postSignup);
+router.post('/signup', ...signupValidators, postSignup);
 
 router.post('/logout', postLogout);
 

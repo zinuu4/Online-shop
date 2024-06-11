@@ -2,6 +2,7 @@ const crypto = require('crypto');
 
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
+const { validationResult } = require('express-validator');
 
 const User = require('../models/user');
 
@@ -22,6 +23,8 @@ exports.getLogin = (req, res, next) => {
     pageTitle: 'Login',
     path: '/login',
     errorMessage: message.length > 0 ? message[0] : null,
+    oldInput: { email: '', password: '' },
+    validationErrors: [],
   });
 };
 
@@ -31,82 +34,114 @@ exports.getSignup = (req, res, next) => {
     pageTitle: 'Signup',
     path: '/signup',
     errorMessage: message.length > 0 ? message[0] : null,
+    oldInput: { email: '', password: '', confirmPassword: '' },
+    validationErrors: [],
   });
 };
 
-exports.postLogin = (req, res, next) => {
+exports.postLogin = async (req, res, next) => {
   const { email, password } = req.body;
-  User.findOne({ email })
-    .then((user) => {
-      if (!user) {
-        req.flash('error', 'Invalid email');
-        return res.redirect('/login');
-      }
 
-      bcrypt
-        .compare(password, user.password)
-        .then((doMatch) => {
-          if (doMatch) {
-            req.session.user = user;
-            return req.session.save((error) => {
-              console.log(error);
-              res.redirect('/');
-            });
-          }
-          req.flash('error', 'Invalid password');
-          res.redirect('/login');
-        })
-        .catch((err) => {
-          console.log(err);
-          res.redirect('/login');
-        });
-    })
-    .catch((error) => {
-      console.log(error);
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(422).render('auth/login', {
+      pageTitle: 'Login',
+      path: '/login',
+      errorMessage: errors.array()[0].msg,
+      oldInput: { email, password },
+      validationErrors: errors.array(),
     });
+  }
+
+  const errorPageRender = (message) => {
+    return res.status(422).render('auth/login', {
+      pageTitle: 'Login',
+      path: '/login',
+      errorMessage: message,
+      oldInput: { email, password },
+      validationErrors: [],
+    });
+  };
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return errorPageRender("User doesn't exist");
+    }
+
+    const doMatch = await bcrypt.compare(password, user.password);
+    if (doMatch) {
+      req.session.user = user;
+      return req.session.save((error) => {
+        if (error) {
+          console.log(error);
+        }
+        res.redirect('/');
+      });
+    } else {
+      return errorPageRender('Invalid password');
+    }
+  } catch (error) {
+    console.log(error);
+    res.redirect('/login');
+  }
 };
 
-exports.postSignup = (req, res, next) => {
+exports.postSignup = async (req, res, next) => {
   const { email, password, confirmPassword } = req.body;
 
-  User.findOne({ email })
-    .then((userDoc) => {
-      if (userDoc) {
-        req.flash('error', 'User already exists');
-        return res.redirect('/signup');
-      }
-      return bcrypt
-        .hash(password, 12)
-        .then((hashedPassword) => {
-          const user = new User({
-            email,
-            password: hashedPassword,
-            cart: { items: [] },
-          });
-          return user.save();
-        })
-        .then(() => {
-          res.redirect('/login');
-          return transporter.sendMail({
-            to: email,
-            from: process.env.GMAIL_USER,
-            subject: 'Signup succeeded',
-            html: `
-              <h1>You successfully signed up</h1>
-              <img src="cid:unique@nodemailer.com"/>
-            `,
-            attachments: [
-              {
-                filename: 'image.jpg',
-                path: 'https://avatars.githubusercontent.com/u/127029646?s=400&u=e7553c31214bb27a5ff257807212036cf815b06d&v=4',
-                cid: 'unique@nodemailer.com',
-              },
-            ],
-          });
-        })
-        .catch((err) => console.log(err));
-    })
-    .catch((err) => console.log(err));
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    console.log(errors);
+    return res.status(422).render('auth/signup', {
+      pageTitle: 'Signup',
+      path: '/signup',
+      errorMessage: errors.array()[0].msg,
+      oldInput: { email, password, confirmPassword },
+      validationErrors: errors.array(),
+    });
+  }
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 12);
+    const user = new User({
+      email,
+      password: hashedPassword,
+      cart: { items: [] },
+    });
+
+    await user.save();
+
+    res.redirect('/login');
+
+    await transporter.sendMail({
+      to: email,
+      from: process.env.GMAIL_USER,
+      subject: 'Signup succeeded',
+      html: `
+        <h1>You successfully signed up</h1>
+        <img src="cid:unique@nodemailer.com"/>
+      `,
+      attachments: [
+        {
+          filename: 'image.jpg',
+          path: 'https://avatars.githubusercontent.com/u/127029646?s=400&u=e7553c31214bb27a5ff257807212036cf815b06d&v=4',
+          cid: 'unique@nodemailer.com',
+        },
+      ],
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).render('auth/signup', {
+      pageTitle: 'Signup',
+      path: '/signup',
+      errorMessage: 'Server error, please try again later.',
+      oldInput: { email, password, confirmPassword },
+      validationErrors: [],
+    });
+  }
 };
 
 exports.postLogout = (req, res, next) => {
