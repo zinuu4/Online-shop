@@ -16,7 +16,7 @@ exports.signupValidators = [
     .normalizeEmail(),
   body(
     'password',
-    'Password should contain 6-14 characters (only numbers and text)'
+    'Password should contain 6-14 characters (only numbers and text, no spaces)'
   )
     .isLength({ min: 6, max: 14 })
     .isAlphanumeric()
@@ -38,7 +38,7 @@ exports.loginValidators = [
     .normalizeEmail(),
   body(
     'password',
-    'Password should contain 6-14 characters (only numbers and text)'
+    'Password should contain 6-14 characters (only numbers and text, no spaces)'
   )
     .isLength({ min: 6, max: 14 })
     .isAlphanumeric()
