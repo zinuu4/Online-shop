@@ -1,6 +1,7 @@
 const { validationResult } = require('express-validator');
 
 const Product = require('../models/product');
+const { return500Error } = require('../utils/error-500');
 
 exports.getAddProduct = (req, res, next) => {
   res.render('admin/edit-product', {
@@ -36,9 +37,12 @@ exports.postAddProduct = (req, res, next) => {
     price,
     userId: req.user,
   });
-  product.save().then(() => {
-    res.redirect('/admin/products');
-  });
+  product
+    .save()
+    .then(() => {
+      res.redirect('/admin/products');
+    })
+    .catch((err) => return500Error(err, next));
 };
 
 exports.getEditProduct = (req, res, next) => {
@@ -94,14 +98,16 @@ exports.postEditProduct = (req, res, next) => {
         res.redirect('/admin/products');
       });
     })
-    .catch((err) => console.log(err));
+    .catch((err) => return500Error(err, next));
 };
 
 exports.postDeleteProduct = (req, res, next) => {
   const { id } = req.params;
-  Product.deleteOne({ _id: id, userId: req.user._id }).then(() => {
-    res.redirect('/admin/products');
-  });
+  Product.deleteOne({ _id: id, userId: req.user._id })
+    .then(() => {
+      res.redirect('/admin/products');
+    })
+    .catch((err) => return500Error(err, next));
 };
 
 exports.getProducts = (req, res, next) => {
@@ -114,5 +120,6 @@ exports.getProducts = (req, res, next) => {
         pageTitle: 'Admin products',
         path: '/admin/products',
       });
-    });
+    })
+    .catch((err) => return500Error(err, next));
 };

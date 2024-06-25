@@ -13,7 +13,7 @@ const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
 const authRoutes = require('./routes/auth');
 
-const { get404 } = require('./controllers/errors');
+const { get404, get500 } = require('./controllers/errors');
 const User = require('./models/user');
 
 const PORT = 3000;
@@ -45,16 +45,19 @@ app.use(flash());
 app.use(cookieParser());
 
 app.use((req, res, next) => {
-  if (!req.session.user || !req.session.user._id) {
+  if (!req.session.user) {
     return next();
   }
   User.findById(req.session.user._id)
     .then((user) => {
+      if (!user) {
+        return next();
+      }
       req.user = user;
       next();
     })
     .catch((error) => {
-      console.log(error);
+      next(new Error(error));
     });
 });
 
@@ -68,7 +71,13 @@ app.use('/admin', adminRoutes);
 app.use(shopRoutes);
 app.use(authRoutes);
 
+app.get('/500', get500);
+
 app.use(get404);
+
+app.use((error, req, res, next) => {
+  res.redirect('/500');
+});
 
 mongoose
   .connect(process.env.MONGODB_URL)

@@ -5,6 +5,7 @@ const nodemailer = require('nodemailer');
 const { validationResult } = require('express-validator');
 
 const User = require('../models/user');
+const { return500Error } = require('../utils/error-500');
 
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
@@ -82,9 +83,8 @@ exports.postLogin = async (req, res, next) => {
     } else {
       return errorPageRender('Invalid password');
     }
-  } catch (error) {
-    console.log(error);
-    res.redirect('/login');
+  } catch (err) {
+    return500Error(err, next);
   }
 };
 
@@ -133,14 +133,7 @@ exports.postSignup = async (req, res, next) => {
       ],
     });
   } catch (err) {
-    console.log(err);
-    return res.status(500).render('auth/signup', {
-      pageTitle: 'Signup',
-      path: '/signup',
-      errorMessage: 'Server error, please try again later.',
-      oldInput: { email, password, confirmPassword },
-      validationErrors: [],
-    });
+    return500Error(err, next);
   }
 };
 
@@ -194,9 +187,7 @@ exports.postReset = (req, res, next) => {
           `,
         });
       })
-      .catch((err) => {
-        console.log(err);
-      });
+      .catch((err) => return500Error(err, next));
   });
 };
 
@@ -217,9 +208,7 @@ exports.getNewPassword = (req, res, next) => {
         passwordToken: token,
       });
     })
-    .catch((err) => {
-      console.log(err);
-    });
+    .catch((err) => return500Error(err, next));
 };
 
 exports.postNewPassword = (req, res, next) => {
@@ -244,5 +233,5 @@ exports.postNewPassword = (req, res, next) => {
     .then((result) => {
       res.redirect('/login');
     })
-    .catch((err) => console.log(err));
+    .catch((err) => return500Error(err, next));
 };
